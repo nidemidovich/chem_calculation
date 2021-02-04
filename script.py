@@ -29,8 +29,14 @@ def run_gamess(
 		os.remove(os.path.join('restart', name+'.dat'))
 	except:
 		pass
+    
+    rungms = ''
+    if sys.platform == 'win32':
+        rungms = 'rungms.bat'
+    else:
+        rungms = 'rungms'
 		
-	call(['rungms.bat', input_file, version, str(ncpus), output_name], 
+	call([rungms, input_file, version, str(ncpus), output_name], 
          shell=True)
 	os.rename(output_name, os.path.join(input_directory, output_name))
 	print('\n\n')
