@@ -18,13 +18,12 @@ opt_calc = GAMESSUS(basis=dict(gbasis='sto', ngauss=3),
 energy_calc = GAMESSUS(basis=dict(gbasis='sto', ngauss=3),
                        contrl=dict(scftyp='rhf', runtyp='energy'))
 
-def run_gamess(
-        name, 
-        input_file, 
-        version, 
-        ncpus, 
-        output_name, 
-        input_directory):
+def run_gamess(name, 
+               input_file, 
+               version, 
+               ncpus, 
+               output_name, 
+               input_directory):
 	try:
 		os.remove(os.path.join('restart', name+'.dat'))
 	except:
