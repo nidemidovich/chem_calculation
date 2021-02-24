@@ -93,11 +93,11 @@ class Job:
         os.chdir(self.path_to_gamess)
 
         Job.run_gamess(name=self.mol_for_nrg_name,
-                   input_file=self.mol_for_nrg_filename,
-                   version=self.version,
-                   ncpus=self.ncpus,
-                   output_name=self.output_name,
-                   input_directory=input_directory)
+                       input_file=self.mol_for_nrg_filename,
+                       version=self.version,
+                       ncpus=self.ncpus,
+                       output_name=self.output_name,
+                       input_directory=input_directory)
 
         os.remove(self.mol_for_nrg_filename)
         os.chdir(input_directory)
