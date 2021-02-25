@@ -21,7 +21,7 @@ class Job:
             except:
                 pass
 
-        call([f'{path}', input_file, version, str(ncpus), 'k', output_name], 
+        call([f'{path}', input_file, version, str(ncpus), f'{temp}', output_name], 
              shell=True)
         print('\n\n')
     
