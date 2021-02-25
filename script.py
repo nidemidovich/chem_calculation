@@ -7,13 +7,7 @@ from calc import Job
 with open('config.json') as f:
 	config = json.load(f)
 
-if sys.platform == 'win32':
-	path_to_gamess = config['path']['Windows']
-elif sys.platform == 'linux':
-	path_to_gamess = config['path']['Linux']
-else:
-	path_to_gamess = config['path']['MacOS']
-
+path = config['path']
 version = config['version']
 
 # Get arguments from console
@@ -23,14 +17,17 @@ else:
 	input_file = sys.argv[1]
 
 try:
-	ncpus = sys.argv[2] 
+	temp = sys.argv[2]
+except:
+	temp = 'temp'
+
+try:
+	ncpus = sys.argv[3] 
 except:
 	ncpus = 1
 
 with open(input_file) as f:
-    i = 0
     for smiles in f:
-        i += 1
         print(smiles)
-        job = Job(i, smiles, ncpus, version, path_to_gamess)
+        job = Job(smiles, temp, ncpus, version, path)
         job.run()

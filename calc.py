@@ -1,3 +1,4 @@
+import glob
 import os
 import sys
 from subprocess import call
@@ -8,40 +9,30 @@ from openbabel import pybel
 
 class Job:
     
-    # Optimize calc
-    opt_calc = GAMESSUS(basis=dict(gbasis='sto', ngauss=3), 
-                        contrl=dict(scftyp='rhf', runtyp='optimize'),
-                        statpt=dict(opttol=0.0001, nstep=20))
-
-    # Energy calc
-    energy_calc = GAMESSUS(basis=dict(gbasis='sto', ngauss=3),
-                           contrl=dict(scftyp='rhf', runtyp='energy'))
+    i = 0
     
     @staticmethod
-    def run_gamess(name, input_file, version, 
-                   ncpus, output_name, input_directory):
-        try:
-            os.remove(os.path.join('restart', name+'.dat'))
-        except:
-            pass
-	
-        rungms = ''
-        if sys.platform == 'win32':
-            rungms = 'rungms.bat'
-        else:
-            rungms = 'rungms'
-		
-        call([rungms, input_file, version, str(ncpus), output_name], 
+    def run_gamess(name, input_file, temp, path,
+                   version, ncpus, output_name):
+        files = glob.glob(f'/{temp}/{name}*')
+        for f in files:		
+            try:
+                os.remove(f)
+            except:
+                pass
+
+        call([f'{path}', input_file, version, str(ncpus), 'k', output_name], 
              shell=True)
-        os.rename(output_name, os.path.join(input_directory, output_name))
         print('\n\n')
     
-    def __init__(self, i, smiles, ncpus, version, path_to_gamess):
+    def __init__(self, smiles, temp, ncpus, version, path):
         self.smiles = smiles.rstrip()
+        self.temp = temp
         self.ncpus = ncpus
         self.version = version
-        self.path_to_gamess = path_to_gamess
-        self.name = str(i)
+        self.path = path
+        Job.i += 1
+        self.name = str(Job.i)
         
     def smi_to_mol(self):
         smiles = pybel.readstring('smi', self.smiles)
@@ -50,28 +41,23 @@ class Job:
         
     def create_inp_file(self):
         mol = read(self.name+'.mol')
-        Job.opt_calc.write_input(atoms=mol)
+        opt_calc = GAMESSUS(basis=dict(gbasis='sto', ngauss=3), 
+                            contrl=dict(scftyp='rhf', runtyp='optimize'),
+                            statpt=dict(opttol=0.0001, nstep=20))
+        opt_calc.write_input(atoms=mol)
         self.mol_for_opt_filename = self.name + '_for_opt.inp'
         os.rename('gamess_us.inp', self.mol_for_opt_filename)
         self.mol_for_opt_name = os.path.splitext(self.mol_for_opt_filename)[0]
     
     def geometry_optimization(self):
         self.output_name = self.name+'_opt.gamout'
-        input_directory = os.getcwd()
-        os.rename(self.mol_for_opt_filename,
-                  os.path.join(self.path_to_gamess, self.mol_for_opt_filename))
-        os.chdir(self.path_to_gamess)
-        print(self.mol_for_opt_filename, os.getcwd())
-
         Job.run_gamess(name=self.mol_for_opt_name,
                        input_file=self.mol_for_opt_filename,
+                       temp=self.temp,
+                       path=self.path,
                        version=self.version,
                        ncpus=self.ncpus,
-                       output_name=self.output_name,
-                       input_directory=input_directory)
-        
-        os.remove(self.mol_for_opt_filename)
-        os.chdir(input_directory)
+                       output_name=self.output_name)
         
     def get_optimized_coords(self):
         mol = next(pybel.readfile('gamout', self.output_name))
@@ -79,7 +65,9 @@ class Job:
         
     def create_inp_file_for_nrg_calc(self):
         mol = read('coords_opt.mol')
-        Job.energy_calc.write_input(atoms=mol)
+        energy_calc = GAMESSUS(basis=dict(gbasis='sto', ngauss=3),
+                               contrl=dict(scftyp='rhf', runtyp='energy'))
+        energy_calc.write_input(atoms=mol)
         self.mol_for_nrg_filename = self.name + '_for_nrg.inp'
         os.rename('gamess_us.inp', self.mol_for_nrg_filename)
         self.mol_for_nrg_name = os.path.splitext(self.mol_for_nrg_filename)[0]
@@ -87,20 +75,13 @@ class Job:
         
     def nrg_calc(self):
         self.output_name = self.name+'_nrg.gamout'
-        input_directory = os.getcwd()
-        os.rename(self.mol_for_nrg_filename, 
-                  os.path.join(self.path_to_gamess, self.mol_for_nrg_filename))
-        os.chdir(self.path_to_gamess)
-
         Job.run_gamess(name=self.mol_for_nrg_name,
                        input_file=self.mol_for_nrg_filename,
+                       temp=self.temp,
+                       path=self.path,
                        version=self.version,
                        ncpus=self.ncpus,
-                       output_name=self.output_name,
-                       input_directory=input_directory)
-
-        os.remove(self.mol_for_nrg_filename)
-        os.chdir(input_directory)
+                       output_name=self.output_name)
         
     def run(self):
         self.smi_to_mol()

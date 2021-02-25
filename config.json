@@ -1,9 +1,4 @@
 {
-	"path": 
-	{
-		"Windows": "D:\\GAMESS",
-		"Linux": "",
-		"MacOS": ""
-	},
+	"path": "/opt/gamess/gamess",
 	"version": "2020.R2.pgiblas"
 }

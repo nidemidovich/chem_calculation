@@ -1,3 +1,4 @@
 .spyproject
 __pycache__
 script1.py
+.vscode
