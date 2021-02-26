@@ -9,6 +9,7 @@ with open('config.json') as f:
 
 path = config['path']
 version = config['version']
+iterations = config['iterations']
 
 # Get arguments from console
 if len(sys.argv) <= 1:
@@ -24,10 +25,10 @@ except:
 try:
 	ncpus = sys.argv[3] 
 except:
-	ncpus = 1
+	ncpus = '1'
 
 with open(input_file) as f:
     for smiles in f:
         print(smiles)
-        job = Job(smiles, temp, ncpus, version, path)
+        job = Job(smiles, temp, ncpus, version, path, iterations)
         job.run()

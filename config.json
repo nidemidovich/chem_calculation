@@ -1,4 +1,5 @@
 {
-	"path": "/opt/gamess/gamess",
-	"version": "2020.R2.pgiblas"
+	"path": "/opt/gamess/rungms",
+	"version": "00",
+	"iterations": "30000"
 }

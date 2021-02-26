@@ -14,18 +14,18 @@ class Job:
     @staticmethod
     def run_gamess(name, input_file, temp, path,
                    version, ncpus, output_name):
-        files = glob.glob(f'/{temp}/{name}*')
+        files = glob.glob('~/gamess-files'+temp+'/'+name+'*')
         for f in files:		
             try:
                 os.remove(f)
             except:
                 pass
 
-        call([f'{path}', input_file, version, str(ncpus), f'{temp}', output_name], 
+        call('{0} {1} {2} {3} {4}>{5}'.format(path, input_file, version, ncpus, temp, output_name), 
              shell=True)
         print('\n\n')
     
-    def __init__(self, smiles, temp, ncpus, version, path):
+    def __init__(self, smiles, temp, ncpus, version, path, iterations):
         self.smiles = smiles.rstrip()
         self.temp = temp
         self.ncpus = ncpus
@@ -33,10 +33,11 @@ class Job:
         self.path = path
         Job.i += 1
         self.name = str(Job.i)
+        self.iterations = iterations
         
     def smi_to_mol(self):
         smiles = pybel.readstring('smi', self.smiles)
-        smiles.make3D()
+        smiles.make3D(steps=int(self.iterations))
         smiles.write(format='mol', filename=self.name+'.mol', overwrite=True)
         
     def create_inp_file(self):
