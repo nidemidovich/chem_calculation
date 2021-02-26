@@ -14,13 +14,15 @@ class Job:
     @staticmethod
     def run_gamess(name, input_file, temp, path,
                    version, ncpus, output_name):
-        files = glob.glob('~/gamess-files'+temp+'/'+name+'*')
+        cwd = os.getcwd()
+        os.chdir(os.path.expanduser('~/'))
+        files = glob.glob('gamess-files/'+temp+'/'+name+'*')
         for f in files:		
             try:
                 os.remove(f)
             except:
                 pass
-
+        os.chdir(cwd)
         call('{0} {1} {2} {3} {4}>{5}'.format(path, input_file, version, ncpus, temp, output_name), 
              shell=True)
         print('\n\n')
