@@ -39,14 +39,18 @@ class Job:
         
     def smi_to_mol(self):
         smiles = pybel.readstring('smi', self.smiles)
-        smiles.make3D(steps=int(self.iterations))
+        smiles.make3D()
+        smiles.localopt(forcefield='ghemical', steps=int(self.iterations))
         smiles.write(format='mol', filename=self.name+'.mol', overwrite=True)
         
     def create_inp_file(self):
         mol = read(self.name+'.mol')
-        opt_calc = GAMESSUS(basis=dict(gbasis='sto', ngauss=3), 
-                            contrl=dict(scftyp='rhf', runtyp='optimize'),
-                            statpt=dict(opttol=0.0001, nstep=20))
+        opt_calc = GAMESSUS(contrl=dict(scftyp='rhf', runtyp='optimize', units='angs'),
+                            system=dict(mwords=50),
+                            basis=dict(gbasis='n31', ngauss=6, ndfunc=1),
+                            statpt=dict(opttol=0.0001, nstep=1000),
+                            guess=dict(guess='huckel'),
+                            dft=dict(dfttyp='b3lyp'))
         opt_calc.write_input(atoms=mol)
         self.mol_for_opt_filename = self.name + '_for_opt.inp'
         os.rename('gamess_us.inp', self.mol_for_opt_filename)
@@ -68,8 +72,11 @@ class Job:
         
     def create_inp_file_for_nrg_calc(self):
         mol = read('coords_opt.mol')
-        energy_calc = GAMESSUS(basis=dict(gbasis='sto', ngauss=3),
-                               contrl=dict(scftyp='rhf', runtyp='energy'))
+        energy_calc = GAMESSUS(contrl=dict(scftyp='rhf', runtyp='energy', units='angs'),
+                               system=dict(mwords=50),
+                               basis=dict(gbasis='n31', ngauss=6, ndfunc=1),
+                               guess=dict(guess='huckel'),
+                               dft=dict(dfttyp='b3lyp'))
         energy_calc.write_input(atoms=mol)
         self.mol_for_nrg_filename = self.name + '_for_nrg.inp'
         os.rename('gamess_us.inp', self.mol_for_nrg_filename)

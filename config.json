@@ -1,5 +1,5 @@
 {
 	"path": "/opt/gamess/rungms",
 	"version": "00",
-	"iterations": "30000"
+	"iterations": "60000"
 }
