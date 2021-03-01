@@ -1,3 +1,4 @@
+import multiprocessing
 import sys
 import json
 
@@ -12,10 +13,7 @@ version = config['version']
 iterations = config['iterations']
 
 # Get arguments from console
-if len(sys.argv) <= 1:
-	input_file = input('Enter path to input: ')
-else:
-	input_file = sys.argv[1]
+input_file = sys.argv[1]
 
 try:
 	temp = sys.argv[2]
@@ -27,8 +25,14 @@ try:
 except:
 	ncpus = '1'
 
+processes = []
 with open(input_file) as f:
-    for smiles in f:
-        print(smiles)
-        job = Job(smiles, temp, ncpus, version, path, iterations)
-        job.run()
+	for smiles in f:
+		print(smiles)
+		job = Job(smiles, temp, ncpus, version, path, iterations)
+		p = multiprocessing.Process(target=job.run)
+		p.start()
+		processes.append(p)
+
+for process in processes:
+	process.join()
